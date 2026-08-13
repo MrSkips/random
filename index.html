@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Long Box — Collection Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="wordmark">
+      <span class="wordmark-icon" aria-hidden="true">✦</span>
+      <div>
+        <h1>The Long Box</h1>
+        <p class="tagline">A binder audit for your ManaBox export</p>
+      </div>
+    </div>
+    <div class="masthead-meta" id="dataFreshness"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- UPLOAD STAGE -->
+  <section id="uploadStage" class="stage">
+    <div class="upload-card" id="dropZone">
+      <p class="upload-eyebrow">Step one</p>
+      <h2>Drop in your ManaBox export</h2>
+      <p class="upload-copy">
+        Export your collection from ManaBox as a CSV, then drag it here — or choose a file.
+        Everything is read in your browser; your list is never uploaded anywhere.
+      </p>
+      <label class="file-button">
+        <input type="file" id="fileInput" accept=".csv" hidden>
+        Choose CSV
+      </label>
+      <p class="upload-hint" id="uploadHint"></p>
+    </div>
+
+    <div class="progress-card" id="progressCard" hidden>
+      <p class="progress-label" id="progressLabel">Reading collection…</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-sub" id="progressSub"></p>
+    </div>
+  </section>
+
+  <!-- DASHBOARD STAGE -->
+  <section id="dashboardStage" class="stage" hidden>
+
+    <div class="summary-row" id="summaryRow"></div>
+
+    <nav class="binder-tabs" id="binderTabs" aria-label="Analysis sections">
+      <button class="tab tab-w" data-panel="panel-color">Color</button>
+      <button class="tab tab-u" data-panel="panel-curve">Curve</button>
+      <button class="tab tab-b" data-panel="panel-types">Types</button>
+      <button class="tab tab-r" data-panel="panel-tribal">Tribal</button>
+      <button class="tab tab-g" data-panel="panel-commanders">Legends</button>
+      <button class="tab tab-m" data-panel="panel-binders">Binders</button>
+      <button class="tab tab-v" data-panel="panel-value">Value</button>
+      <button class="tab tab-c" data-panel="panel-table">Full List</button>
+    </nav>
+
+    <div class="panels">
+
+      <section class="panel" id="panel-color">
+        <h2>Color identity</h2>
+        <p class="panel-sub">Colored mana pips across every card in your pool, plus how your cards split by color identity.</p>
+        <div class="split-grid">
+          <div>
+            <h3>Pips by color</h3>
+            <div class="bars" id="pipBars"></div>
+          </div>
+          <div>
+            <h3>Cards by color identity</h3>
+            <div class="bars" id="identityBars"></div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h3>Fixing &amp; ramp inventory</h3>
+          <div class="bars" id="fixingBars"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-curve">
+        <h2>Mana curve</h2>
+        <p class="panel-sub">Converted mana cost of nonland cards, spells only.</p>
+        <div class="curve-controls" id="curveControls"></div>
+        <div class="curve-chart" id="curveChart"></div>
+      </section>
+
+      <section class="panel" id="panel-types">
+        <h2>Card types</h2>
+        <p class="panel-sub">What your collection is actually made of.</p>
+        <div class="split-grid">
+          <div>
+            <h3>By type</h3>
+            <div class="bars" id="typeBars"></div>
+          </div>
+          <div>
+            <h3>Creature vs. noncreature</h3>
+            <div class="bars" id="creatureRatioBars"></div>
+          </div>
+        </div>
+        <div class="subblock">
+          <h3>Keyword frequency</h3>
+          <div class="bars" id="keywordBars"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-tribal">
+        <h2>Creature types</h2>
+        <p class="panel-sub">Tribal density across your collection — sorted highest first.</p>
+        <input type="search" class="mini-search" id="tribalSearch" placeholder="Filter creature types…">
+        <div class="tribal-table" id="tribalTable"></div>
+      </section>
+
+      <section class="panel" id="panel-commanders">
+        <h2>Commander candidates</h2>
+        <p class="panel-sub">Every legendary creature you own, with color identity and Commander legality.</p>
+        <input type="search" class="mini-search" id="legendSearch" placeholder="Filter legends…">
+        <div class="legend-grid" id="legendGrid"></div>
+      </section>
+
+      <section class="panel" id="panel-binders">
+        <h2>Binder &amp; deck structure</h2>
+        <p class="panel-sub">
+          Tag which binders are locked decks vs. storage/color binders — this is remembered
+          for next time. Everything not tagged as a deck counts as your free pool.
+        </p>
+
+        <h3>Binder roles</h3>
+        <div class="role-chips" id="roleChips"></div>
+
+        <div class="subblock">
+          <h3>Cards per binder</h3>
+          <div class="bars" id="binderQtyBars"></div>
+        </div>
+
+        <div class="subblock split-grid">
+          <div>
+            <h3>Free pool</h3>
+            <div class="mini-stats" id="freePoolStats"></div>
+          </div>
+          <div>
+            <h3>Free pool by color identity</h3>
+            <div class="bars" id="freePoolColorBars"></div>
+          </div>
+        </div>
+
+        <div class="subblock">
+          <h3>Same card in more than one deck binder</h3>
+          <p class="panel-sub">
+            Not necessarily a problem — you may just own multiple copies — but worth a glance,
+            especially for singleton staples.
+          </p>
+          <div id="dupeList"></div>
+        </div>
+
+        <div class="subblock">
+          <h3>Deck completeness</h3>
+          <p class="panel-sub">
+            Structural check only (land count, curve, ramp density) — removal and win-condition
+            detection is planned for V3, where oracle-text tagging can get proper accuracy work.
+          </p>
+          <div class="deck-grid" id="deckCompletenessGrid"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-value">
+        <h2>Collection value</h2>
+        <p class="panel-sub">Based on Scryfall market price where available, falling back to your recorded purchase price.</p>
+
+        <div class="mini-stats" id="valueStats"></div>
+
+        <div class="subblock">
+          <h3>Bulk vs. real value <span class="threshold-label">— threshold: $<span id="thresholdDisplay">1.00</span></span></h3>
+          <input type="range" id="bulkThreshold" min="0.25" max="10" step="0.25" value="1">
+          <div class="bars" id="bulkSplitBars"></div>
+        </div>
+
+        <div class="subblock">
+          <h3>Value by binder</h3>
+          <div class="bars" id="valueByBinderBars"></div>
+        </div>
+
+        <div class="subblock">
+          <h3>Top 25 most valuable cards</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Binder</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
+              <tbody id="topValueBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-table">
+        <h2>Full collection</h2>
+        <div class="table-controls">
+          <input type="search" class="mini-search" id="tableSearch" placeholder="Search by name or type…">
+          <select id="colorFilter">
+            <option value="">All colors</option>
+            <option value="W">White</option>
+            <option value="U">Blue</option>
+            <option value="B">Black</option>
+            <option value="R">Red</option>
+            <option value="G">Green</option>
+            <option value="C">Colorless</option>
+            <option value="M">Multicolor</option>
+          </select>
+          <select id="rarityFilter">
+            <option value="">All rarities</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="mythic">Mythic</option>
+          </select>
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="Creature">Creature</option>
+            <option value="Instant">Instant</option>
+            <option value="Sorcery">Sorcery</option>
+            <option value="Artifact">Artifact</option>
+            <option value="Enchantment">Enchantment</option>
+            <option value="Planeswalker">Planeswalker</option>
+            <option value="Land">Land</option>
+            <option value="Battle">Battle</option>
+          </select>
+          <select id="binderFilter">
+            <option value="">All binders</option>
+          </select>
+          <div class="cmc-range">
+            <label>CMC <input type="number" id="cmcMin" min="0" max="16" placeholder="min"></label>
+            <label>–<input type="number" id="cmcMax" min="0" max="16" placeholder="max"></label>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="cardTable">
+            <thead>
+              <tr>
+                <th data-sort="name">Name</th>
+                <th data-sort="cmc">CMC</th>
+                <th data-sort="type_line">Type</th>
+                <th data-sort="rarity">Rarity</th>
+                <th data-sort="qty">Qty</th>
+                <th data-sort="price">Price</th>
+                <th data-sort="binder">Binder</th>
+              </tr>
+            </thead>
+            <tbody id="cardTableBody"></tbody>
+          </table>
+        </div>
+        <p class="table-count" id="tableCount"></p>
+      </section>
+
+    </div>
+
+    <button class="reset-button" id="resetButton">Start over with a new export</button>
+
+  </section>
+
+  <div class="error-toast" id="errorToast" hidden></div>
+
+</main>
+
+<footer class="site-footer">
+  <p>Runs entirely in your browser. Card data via <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="js/parse.js"></script>
+<script src="js/scryfall.js"></script>
+<script src="js/analyze.js"></script>
+<script src="js/animate.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
